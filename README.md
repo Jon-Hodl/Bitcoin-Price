@@ -1,4 +1,4 @@
-# BTC Historical Price Database
+# 📈📉 Bitcoin Price Database
 
 A free, public API for historical Bitcoin price data. Updated daily from mempool.space.
 
@@ -6,12 +6,12 @@ A free, public API for historical Bitcoin price data. Updated daily from mempool
 
 ### Get All Prices
 ```bash
-curl https://YOUR_USERNAME.github.io/btc-price-db/prices.json
+curl https://jon-hodl.github.io/Bitcoin-Price/prices.json
 ```
 
 ### JavaScript Fetch
 ```javascript
-const response = await fetch('https://YOUR_USERNAME.github.io/btc-price-db/prices.json');
+const response = await fetch('https://jon-hodl.github.io/Bitcoin-Price/prices.json');
 const prices = await response.json();
 
 // Access specific date
@@ -81,7 +81,7 @@ This API is CORS-enabled via GitHub Pages. Use it from any website:
 
 ```html
 <script>
-fetch('https://YOUR_USERNAME.github.io/btc-price-db/prices.json')
+fetch('https://jon-hodl.github.io/Bitcoin-Price/prices.json')
   .then(r => r.json())
   .then(prices => console.log('Loaded', Object.keys(prices).length, 'days of data'));
 </script>
@@ -89,7 +89,7 @@ fetch('https://YOUR_USERNAME.github.io/btc-price-db/prices.json')
 
 ## Projects Using This API
 
-- [Bitcoin Time Machine](https://github.com/YOUR_USERNAME/bitcoin-time-machine) - Transaction analysis tool
+- [Bitcoin Time Machine](https://github.com/Jon-Hodl/bitcoin-time-machine) - Transaction analysis tool
 
 ## Rate Limits
 
