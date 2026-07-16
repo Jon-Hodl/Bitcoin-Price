@@ -352,6 +352,16 @@
             display: block;
             animation: fadeIn 0.3s ease;
         }
+
+        #alltime-chart-container {
+            height: 280px;
+            max-height: 280px;
+            overflow: hidden;
+        }
+
+        #alltime-chart-container canvas {
+            max-height: 200px !important;
+        }
         
         .back-link {
             display: inline-block;
@@ -776,6 +786,8 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    animation: false,
+                    resizeDelay: 0,
                     plugins: {
                         legend: {
                             display: true,
