@@ -769,6 +769,12 @@
             
             // Get last 12 years only (4 halving cycles)
             const years = validYears.slice(-12);
+            
+            // Limit to exactly 12 years
+            if (years.length > 12) {
+                years.splice(0, years.length - 12);
+            }
+            
             const annualHighs = years.map(year => Math.max(...yearStats[year].highs));
             const annualLows = years.map(year => Math.min(...yearStats[year].lows));
             
