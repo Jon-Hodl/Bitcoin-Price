@@ -1,4 +1,4 @@
-# 📈📉 Bitcoin Price Database
+# 📈📉 The Bitcoin Price Archive
 
 A free, public API for historical Bitcoin price data. Updated daily from mempool.space.
 
