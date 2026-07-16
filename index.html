@@ -793,7 +793,7 @@
                             label: 'Annual High',
                             data: logHighs,
                             borderColor: '#22c55e',
-                            backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                            backgroundColor: 'transparent',
                             borderWidth: 2,
                             tension: 0.3,
                             pointRadius: 3,
@@ -805,12 +805,12 @@
                             label: 'Annual Low',
                             data: logLows,
                             borderColor: '#ef4444',
-                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            backgroundColor: 'rgba(0, 212, 255, 0.15)',
                             borderWidth: 2,
                             tension: 0.3,
                             pointRadius: 3,
                             pointBackgroundColor: '#ef4444',
-                            fill: false,
+                            fill: '-1',
                             spanGaps: true
                         }
                     ]
@@ -889,21 +889,23 @@
                             label: 'Monthly High',
                             data: highs,
                             borderColor: '#22c55e',
-                            backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                            backgroundColor: 'transparent',
                             borderWidth: 2,
                             tension: 0.3,
                             pointRadius: 4,
-                            pointBackgroundColor: '#22c55e'
+                            pointBackgroundColor: '#22c55e',
+                            fill: false
                         },
                         {
                             label: 'Monthly Low',
                             data: lows,
                             borderColor: '#ef4444',
-                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            backgroundColor: 'rgba(0, 212, 255, 0.15)',
                             borderWidth: 2,
                             tension: 0.3,
                             pointRadius: 4,
-                            pointBackgroundColor: '#ef4444'
+                            pointBackgroundColor: '#ef4444',
+                            fill: '-1'
                         }
                     ]
                 },
@@ -970,23 +972,23 @@
                             label: 'Daily High',
                             data: highs,
                             borderColor: '#22c55e',
-                            backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                            backgroundColor: 'transparent',
                             borderWidth: 2,
                             tension: 0.2,
                             pointRadius: 3,
                             pointBackgroundColor: '#22c55e',
-                            fill: true
+                            fill: false
                         },
                         {
                             label: 'Daily Low',
                             data: lows,
                             borderColor: '#ef4444',
-                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            backgroundColor: 'rgba(0, 212, 255, 0.15)',
                             borderWidth: 2,
                             tension: 0.2,
                             pointRadius: 3,
                             pointBackgroundColor: '#ef4444',
-                            fill: true
+                            fill: '-1'
                         }
                     ]
                 },
