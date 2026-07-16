@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Bitcoin Price Archive - Historical Prices</title>
     <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <style>
         :root {
             --bitcoin-orange: #f7931a;
@@ -324,6 +325,33 @@
             font-weight: 600;
             text-shadow: 0 0 10px var(--cyan-glow);
         }
+
+        /* Chart Containers */
+        .year-chart-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 16px 0;
+            display: none;
+        }
+
+        .year-chart-container.expanded {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .month-chart-container {
+            background: rgba(0,0,0,0.3);
+            border-top: 1px solid var(--border-color);
+            padding: 20px;
+            display: none;
+        }
+
+        .month-tab.expanded .month-chart-container {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
         
         .back-link {
             display: inline-block;
@@ -392,7 +420,7 @@
         <header>
             <div class="logo">📈📉</div>
             <h1>The Bitcoin Price Archive</h1>
-            <p class="subtitle">Click a year to browse monthly prices</p>
+            <p class="subtitle">Daily archives of the price of bitcoin since the Genesis block</p>
         </header>
         
         <div id="loading" class="loading">
@@ -597,35 +625,78 @@
                         daysContainer.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--text-muted);">No data for this month</div>';
                     }
                     
+                    // Month chart container
+                    const monthChartContainer = document.createElement('div');
+                    monthChartContainer.className = 'month-chart-container';
+                    monthChartContainer.innerHTML = `<canvas id="month-chart-${year}-${month}" style="width: 100%; height: 200px;"></canvas>`;
+                    
+                    // Store month data for chart rendering
+                    monthHeader.dataset.year = year;
+                    monthHeader.dataset.month = month;
+                    monthHeader.dataset.monthData = JSON.stringify(monthDays);
+                    
                     monthTab.appendChild(monthHeader);
+                    monthTab.appendChild(monthChartContainer);
                     monthTab.appendChild(daysContainer);
                     monthsContainer.appendChild(monthTab);
                 }
                 
+                // Year chart container
+                const yearChartContainer = document.createElement('div');
+                yearChartContainer.className = 'year-chart-container';
+                yearChartContainer.innerHTML = `<canvas id="year-chart-${year}" style="width: 100%; height: 250px;"></canvas>`;
+                
                 yearSection.appendChild(yearHeader);
+                yearSection.appendChild(yearChartContainer);
                 yearSection.appendChild(monthsContainer);
                 container.appendChild(yearSection);
+                
+                // Store year data for chart rendering
+                yearHeader.dataset.year = year;
+                yearHeader.dataset.yearData = JSON.stringify(yearData[year]);
+                yearHeader.dataset.yearAvg = yearAvg;
             });
         }
         
+        // Store chart instances to prevent re-rendering
+        const yearCharts = {};
+        const monthCharts = {};
+
         function toggleYear(header, container) {
             const isExpanded = container.classList.contains('expanded');
+            const yearChartContainer = header.nextElementSibling;
+            const year = header.dataset.year;
             
             // Close all other years
             document.querySelectorAll('.months-container.expanded').forEach(el => {
                 el.classList.remove('expanded');
                 el.previousElementSibling.classList.remove('expanded');
+                el.previousElementSibling.previousElementSibling.classList.remove('expanded');
+            });
+            document.querySelectorAll('.year-chart-container.expanded').forEach(el => {
+                el.classList.remove('expanded');
             });
             
             // Toggle this year
             if (!isExpanded) {
                 container.classList.add('expanded');
                 header.classList.add('expanded');
+                yearChartContainer.classList.add('expanded');
+                
+                // Render year chart if not already rendered
+                if (!yearCharts[year]) {
+                    renderYearChart(year, JSON.parse(header.dataset.yearData), parseFloat(header.dataset.yearAvg));
+                }
             }
         }
         
-        function toggleMonth(tab, container) {
+        function toggleMonth(tab, daysContainer) {
             const isExpanded = tab.classList.contains('expanded');
+            const monthHeader = tab.querySelector('.month-header');
+            const monthChartContainer = tab.querySelector('.month-chart-container');
+            const year = monthHeader.dataset.year;
+            const month = monthHeader.dataset.month;
+            const chartId = `${year}-${month}`;
             
             // Close other months in same year
             const siblings = tab.parentElement.querySelectorAll('.month-tab.expanded');
@@ -635,8 +706,198 @@
             
             // Toggle this month
             tab.classList.toggle('expanded', !isExpanded);
+            
+            // Render month chart if expanding and not already rendered
+            if (!isExpanded && !monthCharts[chartId]) {
+                const monthDays = JSON.parse(monthHeader.dataset.monthData);
+                renderMonthChart(year, month, monthDays);
+            }
         }
         
+        function renderYearChart(year, yearData, yearAvg) {
+            const canvas = document.getElementById(`year-chart-${year}`);
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            
+            // Prepare monthly data
+            const months = [];
+            const highs = [];
+            const lows = [];
+            const averages = [];
+            
+            for (let m = 0; m < 12; m++) {
+                const monthDays = yearData[m] || [];
+                if (monthDays.length > 0) {
+                    const monthHigh = Math.max(...monthDays.map(d => d.h));
+                    const monthLow = Math.min(...monthDays.map(d => d.l));
+                    const monthAvg = monthDays.reduce((sum, d) => sum + d.c, 0) / monthDays.length;
+                    
+                    months.push(monthNames[m].substring(0, 3));
+                    highs.push(monthHigh);
+                    lows.push(monthLow);
+                    averages.push(monthAvg);
+                }
+            }
+            
+            yearCharts[year] = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: months,
+                    datasets: [
+                        {
+                            label: 'Monthly High',
+                            data: highs,
+                            borderColor: '#22c55e',
+                            backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.3,
+                            pointRadius: 4,
+                            pointBackgroundColor: '#22c55e'
+                        },
+                        {
+                            label: 'Monthly Low',
+                            data: lows,
+                            borderColor: '#ef4444',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.3,
+                            pointRadius: 4,
+                            pointBackgroundColor: '#ef4444'
+                        },
+                        {
+                            label: 'Year Average',
+                            data: months.map(() => yearAvg),
+                            borderColor: '#f7931a',
+                            backgroundColor: 'transparent',
+                            borderWidth: 2,
+                            borderDash: [8, 4],
+                            pointRadius: 0,
+                            tension: 0
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: { color: '#fff', usePointStyle: true, boxWidth: 10 }
+                        },
+                        title: {
+                            display: true,
+                            text: `${year} - Monthly Price Range`,
+                            color: '#fff',
+                            font: { size: 14 }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: 'rgba(255,255,255,0.05)', drawBorder: false },
+                            ticks: { color: '#888', font: { size: 11 } }
+                        },
+                        y: {
+                            grid: { color: 'rgba(255,255,255,0.05)', drawBorder: false },
+                            ticks: {
+                                color: '#888',
+                                callback: function(value) {
+                                    if (value >= 1000) return '$' + (value / 1000).toFixed(0) + 'k';
+                                    return '$' + value;
+                                }
+                            }
+                        }
+                    },
+                    interaction: { intersect: false, mode: 'index' }
+                }
+            });
+        }
+        
+        function renderMonthChart(year, month, monthDays) {
+            const canvas = document.getElementById(`month-chart-${year}-${month}`);
+            if (!canvas || monthDays.length === 0) return;
+            
+            const ctx = canvas.getContext('2d');
+            const chartId = `${year}-${month}`;
+            
+            // Sort by date
+            monthDays.sort((a, b) => a.date.localeCompare(b.date));
+            
+            const labels = monthDays.map(d => {
+                const [, , day] = d.date.split('-').map(Number);
+                return day;
+            });
+            const highs = monthDays.map(d => d.h);
+            const lows = monthDays.map(d => d.l);
+            
+            monthCharts[chartId] = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Daily High',
+                            data: highs,
+                            borderColor: '#22c55e',
+                            backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.2,
+                            pointRadius: 3,
+                            pointBackgroundColor: '#22c55e',
+                            fill: true
+                        },
+                        {
+                            label: 'Daily Low',
+                            data: lows,
+                            borderColor: '#ef4444',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.2,
+                            pointRadius: 3,
+                            pointBackgroundColor: '#ef4444',
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: { color: '#fff', usePointStyle: true, boxWidth: 10 }
+                        },
+                        title: {
+                            display: true,
+                            text: `${monthNames[month]} ${year} - Daily Price Range`,
+                            color: '#fff',
+                            font: { size: 13 }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: 'rgba(255,255,255,0.05)', drawBorder: false },
+                            ticks: { color: '#888', font: { size: 10 }, maxTicksLimit: 10 }
+                        },
+                        y: {
+                            grid: { color: 'rgba(255,255,255,0.05)', drawBorder: false },
+                            ticks: {
+                                color: '#888',
+                                font: { size: 10 },
+                                callback: function(value) {
+                                    if (value >= 1000) return '$' + (value / 1000).toFixed(0) + 'k';
+                                    return '$' + value;
+                                }
+                            }
+                        }
+                    },
+                    interaction: { intersect: false, mode: 'index' }
+                }
+            });
+        }
+
         function showError(message) {
             document.getElementById('error').textContent = message;
             document.getElementById('error').style.display = 'block';
