@@ -757,6 +757,19 @@
             const annualHighs = years.map(year => Math.max(...yearStats[year].highs));
             const annualLows = years.map(year => Math.min(...yearStats[year].lows));
             
+            // Log base 100 transformation
+            const log100 = (x) => Math.log(x) / Math.log(100);
+            const pow100 = (x) => Math.pow(100, x);
+            
+            const logHighs = annualHighs.map(h => log100(h));
+            const logLows = annualLows.map(l => log100(l));
+            
+            // Generate nice tick values for log100 scale
+            const tickValues = [];
+            for (let i = -2; i <= 3; i++) {
+                tickValues.push(i); // log100 values: 0.01, 1, 100, 10000, 1000000
+            }
+            
             new Chart(ctx, {
                 type: 'line',
                 data: {
@@ -764,7 +777,7 @@
                     datasets: [
                         {
                             label: 'Annual High',
-                            data: annualHighs,
+                            data: logHighs,
                             borderColor: '#22c55e',
                             backgroundColor: 'rgba(34, 197, 94, 0.1)',
                             borderWidth: 2,
@@ -776,7 +789,7 @@
                         },
                         {
                             label: 'Annual Low',
-                            data: annualLows,
+                            data: logLows,
                             borderColor: '#ef4444',
                             backgroundColor: 'rgba(239, 68, 68, 0.1)',
                             borderWidth: 2,
@@ -806,15 +819,18 @@
                             ticks: { color: '#888', font: { size: 10 }, maxTicksLimit: 12 }
                         },
                         y: {
-                            type: 'logarithmic',
-                            min: 0.01,
+                            type: 'linear',
+                            min: -1,
+                            max: 3,
                             grid: { color: 'rgba(255,255,255,0.05)', drawBorder: false },
                             ticks: {
                                 color: '#888',
+                                values: tickValues,
                                 callback: function(value) {
-                                    if (value >= 1000) return '$' + (value / 1000).toFixed(0) + 'k';
-                                    if (value >= 1) return '$' + value.toFixed(0);
-                                    return '$' + value.toFixed(2);
+                                    const price = pow100(value);
+                                    if (price >= 1000) return '$' + (price / 1000).toFixed(0) + 'k';
+                                    if (price >= 1) return '$' + price.toFixed(0);
+                                    return '$' + price.toFixed(2);
                                 }
                             }
                         }
