@@ -757,12 +757,6 @@
             const annualHighs = years.map(year => Math.max(...yearStats[year].highs));
             const annualLows = years.map(year => Math.min(...yearStats[year].lows));
             
-            // Calculate all-time high
-            const allTimeHigh = Math.max(...annualHighs);
-            const athFormatted = allTimeHigh >= 1000 
-                ? '$' + (allTimeHigh / 1000).toFixed(1) + 'k' 
-                : '$' + allTimeHigh.toFixed(0);
-            
             new Chart(ctx, {
                 type: 'line',
                 data: {
@@ -791,17 +785,6 @@
                             pointBackgroundColor: '#ef4444',
                             fill: false,
                             spanGaps: true
-                        },
-                        {
-                            label: 'All-Time High: ' + athFormatted,
-                            data: years.map(() => allTimeHigh),
-                            borderColor: '#f7931a',
-                            backgroundColor: 'transparent',
-                            borderWidth: 2,
-                            borderDash: [8, 4],
-                            pointRadius: 0,
-                            tension: 0,
-                            fill: false
                         }
                     ]
                 },
