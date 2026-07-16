@@ -1,5 +1,7 @@
 # 📈📉 The Bitcoin Price Archive
 
+![Bitcoin Price Archive Banner](banner.png)
+
 A free, public API for historical Bitcoin price data. Updated daily from mempool.space.
 
 ## Quick Start
