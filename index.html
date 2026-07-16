@@ -435,7 +435,7 @@
         
         <!-- All-Time Chart -->
         <div id="alltime-chart-container" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 24px; margin-bottom: 30px;">
-            <h2 style="text-align: center; margin-bottom: 16px; font-size: 16px; color: var(--text-secondary);">All-Time Price History</h2>
+            <h2 style="text-align: center; margin-bottom: 16px; font-size: 16px; color: var(--text-secondary);">Annual Price History (2010 - Present)</h2>
             <canvas id="alltime-chart" style="width: 100%; height: 200px;"></canvas>
         </div>
         
@@ -748,9 +748,14 @@
                 if (data.l > 0) yearStats[year].lows.push(data.l);
             });
             
-            const years = Object.keys(yearStats).sort();
-            const annualHighs = years.map(year => yearStats[year].highs.length > 0 ? Math.max(...yearStats[year].highs) : null);
-            const annualLows = years.map(year => yearStats[year].lows.length > 0 ? Math.min(...yearStats[year].lows) : null);
+            // Filter out years with no valid price data (2009 had $0)
+            const validYears = Object.keys(yearStats).filter(year => 
+                yearStats[year].highs.length > 0 && yearStats[year].lows.length > 0
+            ).sort();
+            
+            const years = validYears;
+            const annualHighs = years.map(year => Math.max(...yearStats[year].highs));
+            const annualLows = years.map(year => Math.min(...yearStats[year].lows));
             
             new Chart(ctx, {
                 type: 'line',
